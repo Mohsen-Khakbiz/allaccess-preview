@@ -4886,7 +4886,7 @@ html[data-theme=dark] .lg .im{background:#1d1d1c}
 const run=()=>{eq();document.fonts&&document.fonts.ready.then(eq);addEventListener('resize',eq);
 window.__roll(document.querySelector('.xt-big'));document.querySelectorAll('#s-demos .hd h2 b,#s-demos .cnt b').forEach(b=>window.__roll(b))};
 document.readyState==='loading'?addEventListener('DOMContentLoaded',()=>setTimeout(run,0)):run()})();</script>
-<style id="glr-mag">.glr .glr-mag{position:absolute;inset:0;background:inherit;border-radius:inherit;pointer-events:none;opacity:0;z-index:2;-webkit-mask:linear-gradient(90deg,transparent calc(var(--mx) - var(--mw)),#000 calc(var(--mx) - var(--mw) + 1px),#000 calc(var(--mx) + var(--mw) - 1px),transparent calc(var(--mx) + var(--mw)));mask:linear-gradient(90deg,transparent calc(var(--mx) - var(--mw)),#000 calc(var(--mx) - var(--mw) + 1px),#000 calc(var(--mx) + var(--mw) - 1px),transparent calc(var(--mx) + var(--mw)))}.glr-mag>canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:inherit}.glr-mag>.glr-mi{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:inherit;font:inherit;color:inherit;letter-spacing:inherit;white-space:nowrap;transform:scale(var(--mz,1.15));transform-origin:var(--mx,50%) 50%}@media (hover:none){.glr .glr-mag{display:none}}</style><script>/* Glass Glare (port of @1haim/ambient-glare-shader v3, MIT, shader unchanged): one shared WebGL context renders every button's glare, copied into a 2D canvas inside each button. Settings live in window.__glr.G (panel below edits them). */
+<script>/* Glass Glare (port of @1haim/ambient-glare-shader v3, MIT, shader unchanged): one shared WebGL context renders every button's glare, copied into a 2D canvas inside each button. Settings live in window.__glr.G (panel below edits them). */
 (function(){const VS=`
 attribute vec2 a_pos;
 attribute vec2 a_uv;
@@ -5036,7 +5036,7 @@ void main() {
 `;
 const hx=(h,a)=>{h=h.replace('#','');const n=parseInt(h.length==3?h.split('').map(c=>c+c).join(''):h,16);return[(n>>16&255)/255,(n>>8&255)/255,(n&255)/255,a]};
 const DEF={"hero":true,"header":true,"footer":true,"how":true,"pricing":true,"hoverOnly":false,"loop":true,"duration":1.5,"pause":1.2,"stagger":0.7,"direction":"rtl","easing":"smooth","freezeAt":-1,"glowWidth":48,"intensity":0.99,"intLight":1,"intDark":1,"softness":0.84,"radius":-1,"refraction":1.06,"dispersion":0.64,"depth":0.65,"bow":0.11,"edgeWear":1.45,"ribbonWidth":3.1,"ribbonStrength":1.06,"ambient":0.019,"cool":"#3845ff","coolA":1,"crest":"#ff33c2","crestA":1,"front":"#ff5205","frontA":1,"bg":"#000000","bgA":0,"dpr":1};
-const G=JSON.parse(JSON.stringify(DEF));G.mag=false;G.magZoom=1.15;/* magnifier test: set G.mag=false to turn off */
+const G=JSON.parse(JSON.stringify(DEF));
 const SEL={hero:'#hb .b1',header:'#hdr .cta',footer:'#s-final .b1',how:'#s-how .sp .b1',pricing:'#s-pricing .pz-cta'};
 const EZ={linear:t=>t,smooth:t=>t*t*(3-2*t),easeOut:t=>1-(1-t)*(1-t),easeIn:t=>t*t,easeInOut:t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2};
 const run=()=>{const gc=document.createElement('canvas'),gl=gc.getContext('webgl',{premultipliedAlpha:false,alpha:true,antialias:false,preserveDrawingBuffer:true});if(!gl)return;
@@ -5073,8 +5073,7 @@ for(const it of items){if(!it.vis)continue;const on=G[it.key]&&(it.key!=='header
  gl.uniform4f(uE,G.edgeWear,G.ribbonWidth,G.ribbonStrength,G.ambient);gl.uniform4fv(uBl,hx(G.cool,G.coolA));gl.uniform4fv(uP,hx(G.crest,G.crestA));gl.uniform4fv(uO,hx(G.front,G.frontA));gl.uniform4fv(uBg,hx(G.bg,G.bgA));
  gl.drawArrays(gl.TRIANGLES,0,6);
  const fl=G.direction==='ltr';it.c.style.transform=fl?'scaleX(-1)':'';
- it.ctx.clearRect(0,0,W,H);it.ctx.drawImage(gc,0,gc.height-H,W,H,0,0,W,H)
- if(it.mg){const mon=G.mag&&p.t>0&&p.t<1;it.mg.style.opacity=mon?1:0;if(mon){if(it.mc.width!==W||it.mc.height!==H){it.mc.width=W;it.mc.height=H}it.mx.clearRect(0,0,W,H);it.mx.drawImage(it.c,0,0);it.mc.style.transform=it.c.style.transform;const x=(fl?p.t:1-p.t)*(w+2*G.glowWidth)-G.glowWidth;it.mg.style.setProperty('--mx',x.toFixed(1)+'px');it.mg.style.setProperty('--mw',(G.glowWidth*.6).toFixed(1)+'px');it.mg.style.setProperty('--mz',G.magZoom)}}}
+ it.ctx.clearRect(0,0,W,H);it.ctx.drawImage(gc,0,gc.height-H,W,H,0,0,W,H)}
 if(live)kick()}
 const refresh=()=>{items.forEach(i=>i.dirty=true);kick()};
 new MutationObserver(refresh).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});{const hd=document.getElementById('hdr');if(hd)new MutationObserver(refresh).observe(hd,{attributes:true,attributeFilter:['class']})}
@@ -5161,7 +5160,6 @@ uniform float uIor;
 uniform float uDispersion;
 uniform float uReflection;
 uniform float uFrost;
-uniform float uZoom;
 uniform vec4 uTint;
 uniform float uShadow;
 uniform vec3 uLight;
@@ -5209,10 +5207,6 @@ vec3 normalAt(vec3 w) {
 }
 
 vec4 content(vec2 w, vec2 gx, vec2 gy) {
-  float zm = max(uZoom, 1.0);
-  w = uCenter.xy + (w - uCenter.xy) / zm;
-  gx /= zm;
-  gy /= zm;
   vec2 uv = vec2(w.x, uView.y - w.y) / uView;
   vec2 dx = vec2(gx.x, -gx.y) / uView;
   vec2 dy = vec2(gy.x, -gy.y) / uView;
@@ -5570,7 +5564,7 @@ const VERTEX=`#version 300 es
 const vec2 corners[3] = vec2[3](vec2(-1.0, -1.0), vec2(3.0, -1.0), vec2(-1.0, 3.0));
 void main() { gl_Position = vec4(corners[gl_VertexID], 0.0, 1.0); }`;
 // Mohsen default = React Bits URL settings (shape=pill&shadow=0.25&reflection=1.05&refraction=1.6&wobble=0.15&morphOnClick=false&elevation=0)
-const DEF={"hero":true,"header":true,"footer":true,"how":true,"pricing":true,"glass":true,"magnetic":true,"shape":"fit","shadow":0.25,"reflection":1.35,"refraction":1.34,"wobble":0.31,"elevation":0.15,"morphOnClick":false,"dispersion":0.98,"frost":0,"color":"#ffffff","tint":0,"smoothness":0.5,"spin":0,"idle":false,"follow":0.1,"pillPad":10,"size":0,"sizeMul":2.6,"pad":81,"fadeIn":0.2,"fadeOut":0.25,"pop":true,"showBg":false,"dpr":2,"magStrength":0.3,"magMax":7,"magRange":19,"magStiff":170,"magDamp":0.6,"magText":true,"magnify":true,"zoom":1.15};
+const DEF={"hero":true,"header":true,"footer":true,"how":true,"pricing":true,"glass":true,"magnetic":true,"shape":"fit","shadow":0.25,"reflection":1.35,"refraction":1.34,"wobble":0.31,"elevation":0.15,"morphOnClick":false,"dispersion":0.98,"frost":0,"color":"#ffffff","tint":0,"smoothness":0.5,"spin":0,"idle":false,"follow":0.1,"pillPad":10,"size":0,"sizeMul":2.6,"pad":81,"fadeIn":0.2,"fadeOut":0.25,"pop":true,"showBg":false,"dpr":2,"magStrength":0.3,"magMax":7,"magRange":19,"magStiff":170,"magDamp":0.6,"magText":true};
 const PRESETS={'Mohsen default':{},'Original (React Bits)':{shape:'pill',follow:1,size:0,shadow:.5,reflection:1,refraction:1,wobble:.5,elevation:.4,dispersion:.35,idle:true},'Calm':{wobble:.05,shadow:.15,refraction:1.2,magStrength:.2,magMax:5},'Juicy':{wobble:.5,refraction:2,dispersion:.7,shadow:.4,elevation:.3,magStrength:.45,magMax:8},'Glass only':{magnetic:false},'Magnetic only':{glass:false}};
 const F=JSON.parse(JSON.stringify(DEF));
 const SEL={hero:'#hb .b1',header:'#hdr .cta',footer:'#s-final .b1',how:'#s-how .sp .b1',pricing:'#s-pricing .pz-cta'};
@@ -5691,7 +5685,7 @@ const boot=()=>{if(init)return!!gl;init=true;
   gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,mediaTex);gl.uniform1i(u.uMedia,0);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,textTex);gl.uniform1i(u.uText,1);
   gl.uniform2f(u.uView,view.width,view.height);gl.uniform1f(u.uRatio,view.ratio);gl.uniform4f(u.uMediaRect,0,0,1,1);gl.uniform1f(u.uMediaOn,0);gl.uniform1f(u.uTextOn,1);gl.uniform4f(u.uBackground,0,0,0,0);gl.uniform1f(u.uBgOn,F.showBg?1:0);gl.uniform2f(u.uHalf,hw*pers/unit,hh*pers/unit);gl.uniform1f(u.uRad,Math.min((parseFloat(getComputedStyle(it.el).borderTopLeftRadius)||0)+F.pillPad,hh)*pers/unit);
   gl.uniform1f(u.uFocal,focal);gl.uniform3f(u.uCenter,cx,cy,hgt);gl.uniformMatrix3fv(u.uInverse,false,M);gl.uniform1f(u.uScale,unit*scale*minS);const bound=size*scale*maxS*1.08+2;gl.uniform1f(u.uBound,bound);
-  gl.uniform1f(u.uMorph,eased);gl.uniform1f(u.uRipple,body.ripple);gl.uniform1f(u.uTime,reduced?0:time);gl.uniform1f(u.uIor,1+.5*clamp(F.refraction,0,2));gl.uniform1f(u.uDispersion,clamp(F.dispersion,0,1));gl.uniform1f(u.uReflection,clamp(F.reflection,0,2));gl.uniform1f(u.uFrost,clamp(F.frost,0,1));gl.uniform1f(u.uZoom,F.magnify?Math.max(1,F.zoom):1);
+  gl.uniform1f(u.uMorph,eased);gl.uniform1f(u.uRipple,body.ripple);gl.uniform1f(u.uTime,reduced?0:time);gl.uniform1f(u.uIor,1+.5*clamp(F.refraction,0,2));gl.uniform1f(u.uDispersion,clamp(F.dispersion,0,1));gl.uniform1f(u.uReflection,clamp(F.reflection,0,2));gl.uniform1f(u.uFrost,clamp(F.frost,0,1));
   const col=parseColor(F.color)||[1,1,1,1];gl.uniform4f(u.uTint,col[0],col[1],col[2],clamp(F.tint,0,1)*1.6);gl.uniform1f(u.uShadow,clamp(F.shadow,0,1));const L=[-.42,.55,1],ll=Math.hypot(...L);gl.uniform3f(u.uLight,L[0]/ll,L[1]/ll,L[2]/ll);gl.uniform1f(u.uPresence,presence);
   const fp=bound*1.6*(SHADOW_SIZE/(SHADOW_SIZE-6))+1,fx=cx+(L[0]/L[2])*hgt,fy=cy+(L[1]/L[2])*hgt;gl.uniform4f(u.uShadowBox,fx-fp,fy-fp,fp*2,fp*2);gl.uniform2f(u.uShadowSize,SHADOW_SIZE,SHADOW_SIZE);gl.uniform1i(u.uShadowMap,2);gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,null);
   if(F.shadow>0){gl.bindFramebuffer(gl.FRAMEBUFFER,shadowTarget);gl.viewport(0,0,SHADOW_SIZE,SHADOW_SIZE);gl.uniform1f(u.uPass,1);gl.drawArrays(gl.TRIANGLES,0,3);gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.bindTexture(gl.TEXTURE_2D,shadowMap)}
@@ -5716,7 +5710,7 @@ const run=()=>{Object.entries(SEL).forEach(([key,sel])=>{const el=document.query
  el.addEventListener('pointerup',()=>{if(gl)G.click(it)})});
  window.__fg={F,DEF,PRESETS,items,G,kick:()=>{mkick();G.reset&&G.reset()}};
 /* Glass controls panel (fluid hover glass) */
-(()=>{const R=[['Magnifier'],['magnify','Magnifier','b'],['zoom','Zoom',1,1.6,.01],['Glass'],['glass','Glass on','b'],['shape','Shape',SHAPES],['refraction','Refraction',0,2,.01],['dispersion','Dispersion',0,1,.01],['reflection','Reflection',0,2,.01],['frost','Frost',0,1,.01],['tint','Tint',0,1,.01],['color','Tint colour','c'],['shadow','Shadow',0,1,.01],['elevation','Elevation',0,1,.01],['pillPad','Pill pad',0,30,1],['Motion'],['wobble','Wobble',0,1,.01],['smoothness','Smoothness',0,1,.01],['follow','Follow',0,1,.01],['spin','Spin',0,3,.01],['idle','Idle drift','b'],['pop','Pop in','b'],['morphOnClick','Morph on click','b'],['fadeIn','Fade in',0,1,.01],['fadeOut','Fade out',0,1,.01],['Magnetic'],['magnetic','Magnetic','b'],['magStrength','Strength',0,1,.01],['magMax','Max px',0,20,1],['magRange','Range px',0,60,1],['magText','Text counter-move','b'],['Where'],['hero','Hero','b'],['header','Header','b'],['how','How it works','b'],['pricing','Pricing','b'],['footer','Footer','b']];
+(()=>{const R=[['Glass'],['glass','Glass on','b'],['shape','Shape',SHAPES],['refraction','Refraction',0,2,.01],['dispersion','Dispersion',0,1,.01],['reflection','Reflection',0,2,.01],['frost','Frost',0,1,.01],['tint','Tint',0,1,.01],['color','Tint colour','c'],['shadow','Shadow',0,1,.01],['elevation','Elevation',0,1,.01],['pillPad','Pill pad',0,30,1],['Motion'],['wobble','Wobble',0,1,.01],['smoothness','Smoothness',0,1,.01],['follow','Follow',0,1,.01],['spin','Spin',0,3,.01],['idle','Idle drift','b'],['pop','Pop in','b'],['morphOnClick','Morph on click','b'],['fadeIn','Fade in',0,1,.01],['fadeOut','Fade out',0,1,.01],['Magnetic'],['magnetic','Magnetic','b'],['magStrength','Strength',0,1,.01],['magMax','Max px',0,20,1],['magRange','Range px',0,60,1],['magText','Text counter-move','b'],['Where'],['hero','Hero','b'],['header','Header','b'],['how','How it works','b'],['pricing','Pricing','b'],['footer','Footer','b']];
  const st=document.createElement('style');st.textContent='#glr-pn{position:fixed;left:16px;bottom:16px;z-index:9999;font:12px/1.3 system-ui,sans-serif;color:#111}#glr-pn>button{background:#111;color:#fff;border:0;padding:8px 12px;cursor:pointer}#glr-pn .bx{display:none;width:290px;max-height:70vh;overflow:auto;background:#fff;outline:1px solid #ddd;box-shadow:0 30px 60px -30px rgba(0,0,0,.4);padding:10px 12px;margin-bottom:8px}#glr-pn.open .bx{display:block}#glr-pn h5{margin:10px 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#888}#glr-pn label{display:grid;grid-template-columns:1fr 120px 38px;gap:6px;align-items:center;margin:3px 0}#glr-pn output{text-align:right;color:#666}#glr-pn .r{display:flex;gap:6px;margin-top:10px}#glr-pn .r button{flex:1;padding:6px;border:1px solid #ddd;background:#fafafa;cursor:pointer}@media (hover:none){#glr-pn{display:none}}';document.head.appendChild(st);
  const P=document.createElement('div');P.id='glr-pn';P.innerHTML='<div class="bx"></div><button type="button">Glass</button>';document.body.appendChild(P);const B=P.querySelector('.bx');P.lastChild.onclick=()=>P.classList.toggle('open');
  const ch=()=>{mdirty=true;G.reset&&G.reset();mkick()};
