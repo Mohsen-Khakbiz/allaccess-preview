@@ -779,13 +779,13 @@ html[data-theme=dark] .card-swap .cs-go{box-shadow:inset 0 0 0 1px rgba(255,255,
 <script>(()=>{/* LIQUID halftone wordmark. Vanilla canvas take on "Halftone Wordmark Footer" (21st.dev, @kedhareswer): the word is printed in halftone dots that part around the pointer on springs and warm toward the accent as they move; click/tap sends a shock ring through the letters. Colours from the footer's CSS vars (--lqf-ink, --lqf-bg, --acc), so light/dark follow the theme. Runs only while the footer is revealed and on screen, sleeps when every dot is at rest. */
 const ft=document.getElementById('s-footer'),wr=document.getElementById('lqf-w'),cv=document.getElementById('lqf-c'),W='LIQUID',rm=matchMedia('(prefers-reduced-motion: reduce)');
 if(!ft||!wr||!cv)return;const x=cv.getContext('2d');
-let on=false,vis=false,raf=0,dpr=1,cw=0,ch=0,P=8,N=0,X,Y,R,DX,DY,VX,VY,ptr=null,rings=[],ink=[26,26,24],acc=[255,135,9],bg='#F2F1EE',last=0;
+const MD={A:{rf:1.6,rw:4,rd:1400,k:.09,dm:.8,pf:.9},B:{rf:.6,rw:3,rd:1000,k:.1,dm:.78,pf:.7},C:{rf:2.6,rw:6,rd:1600,k:.035,dm:.88,pf:2.2},D:{rf:1.2,rw:4,rd:1200,k:.09,dm:.8,pf:1}};let mode=(()=>{try{const m=localStorage.getItem('lqfMode');return MD[m]?m:'A'}catch(e){return'A'}})();let on=false,vis=false,raf=0,dpr=1,cw=0,ch=0,P=8,N=0,X,Y,R,DX,DY,VX,VY,ptr=null,rings=[],ink=[26,26,24],acc=[255,135,9],bg='#F2F1EE',last=0;
 const css=k=>getComputedStyle(ft).getPropertyValue(k).trim();
 const rgb=c=>{const m=document.createElement('canvas').getContext('2d');m.fillStyle=c||'#000';const h=m.fillStyle;if(h[0]==='#')return[1,3,5].map(i=>parseInt(h.substr(i,2),16));return(h.match(/[\d.]+/g)||[0,0,0]).slice(0,3).map(Number)};
 function colors(){ink=rgb(css('--lqf-ink')||'#1A1A18');acc=rgb(getComputedStyle(document.documentElement).getPropertyValue('--acc').trim()||'#ff8709');bg=css('--lqf-bg')}
 function build(){/* sample the word on a square grid; each covered cell becomes one dot sized by its coverage */
  const nv=(k,d)=>{const n=parseFloat(css(k));return isNaN(n)?d:n};wr.style.paddingTop=60*nv('--lqf-lh',1)+'px';const pl=parseFloat(getComputedStyle(wr).paddingLeft)||0;cw=(wr.clientWidth-2*pl)*nv('--lqf-size',100)/100;if(cw<10)return;
- P=Math.max(5,Math.min(9,Math.round(cw/150)));const fam='"Albert Sans Local",sans-serif',wt=css('--lqf-weight')||800,o=document.createElement('canvas'),c=o.getContext('2d',{willReadFrequently:true});
+ P=mode==='C'?Math.max(3,Math.min(5,Math.round(cw/280))):mode==='D'?Math.max(8,Math.min(14,Math.round(cw/100))):Math.max(5,Math.min(9,Math.round(cw/150)));const fam='"Albert Sans Local",sans-serif',wt=css('--lqf-weight')||800,o=document.createElement('canvas'),c=o.getContext('2d',{willReadFrequently:true});
  c.font=wt+' 200px '+fam;c.letterSpacing='-4px';let m=c.measureText(W);const fs=200*cw/(m.actualBoundingBoxLeft+m.actualBoundingBoxRight);
  c.font=wt+' '+fs+'px '+fam;c.letterSpacing=(-.02*fs)+'px';m=c.measureText(W);const A=m.actualBoundingBoxAscent,D=Math.max(0,m.actualBoundingBoxDescent),pt=parseFloat(getComputedStyle(wr).paddingTop)||0;
  /* crop: letters sit on the footer's bottom edge, a little of the baseline is cut like the original */
@@ -794,31 +794,44 @@ function build(){/* sample the word on a square grid; each covered cell becomes 
  const d=c.getImageData(0,0,o.width,o.height).data,xs=[],ys=[],rs=[];
  for(let gy=P/2;gy<ch;gy+=P)for(let gx=P/2;gx<ww;gx+=P){let s=0,k=0;for(let sy=-1;sy<=1;sy++)for(let sx=-1;sx<=1;sx++){const px=Math.round(gx+sx*P/3),py=Math.round(gy+sy*P/3);if(px>=0&&py>=0&&px<o.width&&py<o.height){s+=d[(py*o.width+px)*4+3];k++}}const cov=s/(k*255);if(cov>.06){xs.push(gx);ys.push(gy);rs.push(P*.5*Math.sqrt(cov))}}
  N=xs.length;X=Float32Array.from(xs);Y=Float32Array.from(ys);R=Float32Array.from(rs);DX=new Float32Array(N);DY=new Float32Array(N);VX=new Float32Array(N);VY=new Float32Array(N);
- dpr=Math.min(2,window.devicePixelRatio||1);Object.assign(cv.style,{left:ox+'px',top:'0',width:ww+'px',height:ch+'px'});cv.width=Math.round(ww*dpr);cv.height=Math.round(ch*dpr);draw()}
+ dpr=Math.min(2,window.devicePixelRatio||1);Object.assign(cv.style,{left:ox+'px',top:'0',width:ww+'px',height:ch+'px'});cv.width=Math.round(ww*dpr);cv.height=Math.round(ch*dpr);paint()}
 const B=5,paths=[];/* colour buckets by displacement: ink -> accent */
 function draw(){x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,cv.width,cv.height);for(let b=0;b<B;b++)paths[b]=new Path2D();
  for(let i=0;i<N;i++){const dx=DX[i],dy=DY[i],m=Math.min(1,Math.hypot(dx,dy)/(P*2.2)),b=Math.min(B-1,Math.floor(m*B)),r=R[i]*(1+m*.25),px=X[i]+dx,py=Y[i]+dy;paths[b].moveTo(px+r,py);paths[b].arc(px,py,r,0,6.2832)}
  for(let b=0;b<B;b++){const t=b/(B-1),c=ink.map((v,k)=>Math.round(v+(acc[k]-v)*t));x.fillStyle='rgb('+c+')';x.fill(paths[b])}}
+const GL=' .:-=+*#%@';
+function drawAlt(){x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,cv.width,cv.height);
+ if(mode==='D'){x.font='500 '+Math.round(P*1.15)+'px GMono,ui-monospace,monospace';x.textAlign='center';x.textBaseline='middle'}
+ for(let b=0;b<B;b++){const t=b/(B-1),c=ink.map((v,k)=>Math.round(v+(acc[k]-v)*t));x.fillStyle='rgb('+c+')';
+  for(let i=0;i<N;i++){const dx=DX[i],dy=DY[i],m=Math.min(1,Math.hypot(dx,dy)/(P*2.2));if(Math.min(B-1,Math.floor(m*B))!==b)continue;const px=X[i]+dx,py=Y[i]+dy;
+   if(mode==='C'){const r=R[i]*(1-m*.35)*1.7;x.fillRect(px-r/2,py-r/2,r,r)}
+   else{const cv2=(R[i]/(P*.5))**2,g=Math.min(GL.length-1,Math.max(1,Math.round(cv2*(GL.length-1)+(m>.15?(i%3)-1+m*3:0))));x.fillText(GL[g],px,py)}}}}
+const paint=()=>mode==='A'||mode==='B'?draw():drawAlt();
 function step(dt){/* springs + pointer repulsion + ring shocks; returns kinetic activity */
- const k=.09,dm=Math.pow(.8,dt),RP=Math.max(60,P*13),now=performance.now();let act=0;rings=rings.filter(g=>now-g.t<1400);
+ const M=MD[mode],k=M.k,dm=Math.pow(M.dm,dt),RP=Math.max(60,(mode==='C'?P*30:P*13)),now=performance.now();let act=0;rings=rings.filter(g=>now-g.t<M.rd);
  for(let i=0;i<N;i++){let fx=-DX[i]*k,fy=-DY[i]*k;const x0=X[i]+DX[i],y0=Y[i]+DY[i];
-  if(ptr){const ex=x0-ptr.x,ey=y0-ptr.y,d=Math.hypot(ex,ey);if(d<RP&&d>.01){const f=(1-d/RP)**2*P*.9;fx+=ex/d*f;fy+=ey/d*f}}
-  for(const g of rings){const a=(now-g.t)/1400,rad=a*g.m,ex=X[i]-g.x,ey=Y[i]-g.y,d=Math.hypot(ex,ey)||1,w=P*4,q=(d-rad)/w;if(q>-2&&q<2){const f=Math.exp(-q*q*2)*(1-a)*P*1.6;fx+=ex/d*f;fy+=ey/d*f}}
+  if(ptr){const ex=x0-ptr.x,ey=y0-ptr.y,d=Math.hypot(ex,ey);if(d<RP&&d>.01){const f=(1-d/RP)**2*P*M.pf;fx+=ex/d*f;fy+=ey/d*f;if(mode==='C'){const j=(i*12.9898%6.283);fx+=Math.cos(j)*f*.6;fy+=Math.sin(j)*f*.6}}}
+  for(const g of rings){const a=(now-g.t)/M.rd,rad=a*g.m,ex=X[i]-g.x,ey=Y[i]-g.y,d=Math.hypot(ex,ey)||1,w=P*M.rw,q=(d-rad)/w;if(q>-2&&q<2){const f=Math.exp(-q*q*2)*(1-a)*P*M.rf;fx+=ex/d*f;fy+=ey/d*f}}
   VX[i]=(VX[i]+fx*dt)*dm;VY[i]=(VY[i]+fy*dt)*dm;DX[i]+=VX[i]*dt;DY[i]+=VY[i]*dt;act+=Math.abs(VX[i])+Math.abs(VY[i])+Math.abs(DX[i])*.1+Math.abs(DY[i])*.1}
  return act/(N||1)}
-function loop(t){raf=0;if(!on||!vis)return;const dt=last?Math.min(3,(t-last)/16.67):1;last=t;const a=step(dt);draw();if(a>.004||ptr||rings.length)raf=requestAnimationFrame(loop);else{last=0;DX.fill(0);DY.fill(0);VX.fill(0);VY.fill(0);draw()}}
+function loop(t){raf=0;if(!on||!vis)return;const dt=last?Math.min(3,(t-last)/16.67):1;last=t;const a=step(dt);paint();if(a>.004||ptr||rings.length)raf=requestAnimationFrame(loop);else{last=0;DX.fill(0);DY.fill(0);VX.fill(0);VY.fill(0);paint()}}
 const go=()=>{if(!rm.matches&&on&&vis&&!raf&&N){last=0;raf=requestAnimationFrame(loop)}};
 const pos=e=>{const r=cv.getBoundingClientRect(),s=r.width/(cv.clientWidth||1);return{x:(e.clientX-r.left)/s,y:(e.clientY-r.top)/s}};
-wr.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse')return;ptr=pos(e);go()});
+wr.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse'&&!(e.buttons&1))return;ptr=pos(e);go()});wr.addEventListener('pointerup',e=>{if(e.pointerType!=='mouse')ptr=null});wr.addEventListener('pointercancel',()=>{ptr=null});
 wr.addEventListener('pointerleave',()=>{ptr=null});
 wr.addEventListener('pointerdown',e=>{if(rm.matches)return;const p=pos(e);rings.push({x:p.x,y:p.y,t:performance.now(),m:Math.hypot(Math.max(p.x,cv.clientWidth-p.x),Math.max(p.y,ch-p.y))+P*8});if(rings.length>4)rings.shift();go()});
 new IntersectionObserver(es=>{vis=es[es.length-1].isIntersecting;vis?go():(cancelAnimationFrame(raf),raf=0)}).observe(wr);
 window.__lqfRun=v=>{on=v;v?go():(cancelAnimationFrame(raf),raf=0)};
-window.__lqf={retune:()=>{colors();draw()},rebuild:()=>{colors();build()},dots:()=>N,ring:(px,py)=>{rings.push({x:px,y:py,t:performance.now(),m:cv.clientWidth});go()}};
+window.__lqf={retune:()=>{colors();paint()},rebuild:()=>{colors();build()},dots:()=>N,ring:(px,py)=>{rings.push({x:px,y:py,t:performance.now(),m:cv.clientWidth});go()}};
 new IntersectionObserver(e=>{const v=e[0].isIntersecting,cb=document.getElementById('cb');cb&&cb.classList.toggle('lqf-hide',v);if(!window.ScrollTrigger){on=v;ft.classList.toggle('on',v);v?go():(cancelAnimationFrame(raf),raf=0)}}).observe(document.getElementById('ft-sp')||ft);
 ft.querySelector('.lqf-top')?.addEventListener('click',e=>{e.preventDefault();scrollTo({top:0,behavior:rm.matches?'auto':'smooth'})});
 let RT,lw=0;addEventListener('resize',()=>{clearTimeout(RT);RT=setTimeout(()=>{if(wr.clientWidth!==lw){lw=wr.clientWidth;build()}},150)});
 const init=()=>{colors();lw=wr.clientWidth;build()};
+/* TEMP: footer effect switcher for review (A current, B soft ripple, C dust, D ascii) */
+(()=>{const st=document.createElement('style');st.textContent='#lqf-sw{position:fixed;left:16px;bottom:16px;z-index:2147483000;display:flex;gap:2px;padding:3px;background:rgba(20,20,19,.86);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:999px;font:500 11px/1 GMono,ui-monospace,monospace;letter-spacing:.04em;text-transform:uppercase}#lqf-sw button{all:unset;cursor:pointer;color:#bdbcb8;padding:8px 10px;border-radius:999px;touch-action:manipulation}#lqf-sw button[aria-pressed=true]{background:#fff;color:#141413}#lqf-sw button:focus-visible{outline:1px solid #ff8709}';document.head.appendChild(st);
+ const w=document.createElement('div');w.id='lqf-sw';w.setAttribute('role','group');w.setAttribute('aria-label','Footer effect');const T={A:'Halftone',B:'Soft',C:'Dust',D:'ASCII'};
+ Object.keys(MD).forEach(m=>{const b=document.createElement('button');b.type='button';b.textContent='Footer '+m;b.title=T[m];b.setAttribute('aria-pressed',m===mode);b.onclick=()=>{mode=m;try{localStorage.setItem('lqfMode',m)}catch(e){}w.querySelectorAll('button').forEach(z=>z.setAttribute('aria-pressed',z===b));rings=[];ptr=null;build();go()};w.appendChild(b)});document.body.appendChild(w)})();
+window.__lqf.mode=m=>{const b=[...document.querySelectorAll('#lqf-sw button')].find(z=>z.textContent.endsWith(m));b&&b.click();return mode};
 (document.fonts&&document.fonts.load?document.fonts.load((css('--lqf-weight')||800)+' 100px "Albert Sans Local"').then(()=>document.fonts.ready):Promise.resolve()).then(init,init)})()</script></footer></div></div></div></div><!-- /#smooth-content /#smooth-wrapper -->
 <a class="cp" id="cp" href="https://store-staging.liquid-themes.com/join"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="8" width="18" height="4"/><path d="M5 12v9h14v-9M12 8v13M12 8C10 4 6 4 7 7c.6 1.4 5 1 5 1zm0 0c2-4 6-4 5-1-.6 1.4-5 1-5 1z"/></svg>Join now and save <b>$200</b><span class="x">✕</span></a>
 <div class="cb" id="cb"><div class="pn"><div class="h"><span class="dot"></span><b>Need help deciding?</b><span>✕</span></div>
@@ -5691,9 +5704,26 @@ document.readyState==='loading'?addEventListener('DOMContentLoaded',run):run();
  const lg=document.querySelector('#s-demos .lg');if(lg){lg.querySelectorAll('figure:not([hidden])').forEach(rv);
   /* demos: theme filter + Load more (24 per click) over the full list; filtering re-pages from the first batch */
   const figs=[...lg.querySelectorAll('figure')],thm=f=>f.dataset.t||'',I0=figs.filter(f=>!f.hidden).length||24,seen=new WeakSet(figs.filter(f=>!f.hidden)),b=document.querySelector('#s-demos .more .b1'),mr=b&&b.parentNode,fl=[...document.querySelectorAll('#s-demos .flt a[data-f]')];let cur='*',n=I0;
-  const apply=()=>{const L=cur==='*'?figs:figs.filter(f=>thm(f)===cur);figs.forEach(f=>{f.hidden=true});L.slice(0,n).forEach(f=>{f.hidden=false;if(!seen.has(f)){seen.add(f);rv(f)}});const all=n>=L.length;lg.classList.toggle('open',all||n>I0);if(mr)mr.style.display=all?'none':'';lg.dataset.shown=Math.min(n,L.length);lg.dataset.total=L.length;window.__relayout?__relayout():ok&&ScrollTrigger.refresh()};
+  let tl=null,tamed=false;const tame=()=>{if(tamed||!ok)return;tamed=true;figs.forEach(f=>{gsap.getTweensOf(f).forEach(t=>{t.scrollTrigger&&t.scrollTrigger.kill();t.kill()});gsap.set(f,{opacity:1,filter:'none'})})};
+  const done=()=>{lg.style.height='';window.__relayout?__relayout():0;ok&&ScrollTrigger.refresh();dispatchEvent(new Event('resize'))};
+  const layout=L=>{figs.forEach(f=>{f.hidden=true});L.slice(0,n).forEach(f=>{f.hidden=false;seen.add(f)});const all=n>=L.length;lg.classList.toggle('open',all||n>I0);if(mr)mr.style.display=all?'none':'';lg.dataset.shown=Math.min(n,L.length);lg.dataset.total=L.length};
+  /* filter / load more transition: leavers fade+drop 180ms, stayers FLIP 350ms, newcomers rise 12px with 30ms stagger (first 8), grid height eases; ScrollTrigger refresh at end */
+  const apply=(more)=>{const L=cur==='*'?figs:figs.filter(f=>thm(f)===cur);
+   if(!ok||RM){layout(L);done();return}
+   if(tl){tl.progress(1).kill();tl=null}tame();
+   const before=figs.filter(f=>!f.hidden),want=new Set(L.slice(0,n)),leave=more?[]:before.filter(f=>!want.has(f)),stay=before.filter(f=>want.has(f)),h0=lg.offsetHeight;
+   tl=gsap.timeline({onComplete:()=>{tl=null;gsap.set(figs,{clearProps:'transform,opacity'});done()}});
+   if(leave.length)tl.to(leave,{opacity:0,y:8,duration:.18,ease:'power1.in'});
+   tl.add(()=>{const r0=new Map(stay.map(f=>[f,f.getBoundingClientRect()]));gsap.set(leave,{clearProps:'transform,opacity'});layout(L);
+    const h1=lg.offsetHeight,inn=L.slice(0,n).filter(f=>!stay.includes(f)),vh=innerHeight;
+    stay.forEach(f=>{const a=r0.get(f),b=f.getBoundingClientRect(),dx=a.left-b.left,dy=a.top-b.top;if(Math.abs(dx)+Math.abs(dy)>.5)gsap.fromTo(f,{x:dx,y:dy},{x:0,y:0,duration:.35,ease:'power3.out',overwrite:true})});
+    let k=0;inn.forEach(f=>{const r=f.getBoundingClientRect();if(r.top>vh+40||r.bottom<-40){gsap.set(f,{opacity:1});return}gsap.fromTo(f,{opacity:0,y:12},{opacity:1,y:0,duration:.32,ease:'power3.out',delay:Math.min(k++,7)*.03,overwrite:true})});
+    if(Math.abs(h1-h0)>1){gsap.fromTo(lg,{height:h0},{height:h1,duration:.35,ease:'power3.out'})}
+   });
+   tl.to({},{duration:.55});
+  };
   fl.forEach(a=>{const c=a.querySelector('span');const k=a.dataset.f;if(c)c.textContent=k==='*'?figs.length:figs.filter(f=>thm(f)===k).length;a.addEventListener('click',e=>{e.preventDefault();if(k===cur)return;cur=k;n=I0;fl.forEach(x=>{const on=x===a;x.classList.toggle('on',on);x.setAttribute('aria-pressed',on)});apply();const lb=lg.closest('.lib');if(lb&&lb.getBoundingClientRect().top<0){const sm=window.ScrollSmoother&&ScrollSmoother.get();sm?sm.scrollTo(lb,true,'top 30px'):lb.scrollIntoView({behavior:'smooth'})}})});
-  if(b){b.textContent='Load more demos';b.setAttribute('role','button');b.style.cursor='pointer';b.addEventListener('click',e=>{e.preventDefault();n+=24;apply()})}}
+  if(b){b.textContent='Load more demos';b.setAttribute('role','button');b.style.cursor='pointer';b.addEventListener('click',e=>{e.preventDefault();n+=24;apply(true)})}}
  ok&&ScrollTrigger.refresh();
  const pc=document.querySelector('#s-pricing .pz-card');window.__glow&&pc&&window.__glow(document.querySelector('#s-pricing .ct'),[pc],{pad:200})};
  document.readyState==='complete'?go():addEventListener('load',go)})();</script><style id="erdi-mobile">details>summary,details>summary *,.fq summary,.fq .q,.fq button,.fq [aria-expanded],.fq details>summary{cursor:pointer}
